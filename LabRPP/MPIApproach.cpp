@@ -28,9 +28,18 @@ void run_mpi_test() {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    double a = 0.0;
-    double b = 10.0;
-    int n = 900000000;
+    double a, b;
+    int n;
+
+    if (rank == 0) {
+        a = 0.0;
+        b = 10.0;
+        n = 900000000;
+    }
+
+    MPI_Bcast(&a, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&b, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
     double local_a = a + rank * (b - a) / size;
     double local_b = a + (rank + 1) * (b - a) / size;
@@ -42,7 +51,7 @@ void run_mpi_test() {
 
     MPI_Reduce(&local_result, &global_result, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     auto end = chrono::high_resolution_clock::now();
-
+    cout << "MPI:" << endl;
     if (rank == 0) {
         chrono::duration<double> elapsed = end - start;
         cout << "Processes: " << size << endl;
@@ -53,6 +62,7 @@ void run_mpi_test() {
 
     MPI_Finalize();
 }
+
 
 int main() {
     run_mpi_test();
