@@ -28,9 +28,19 @@ void run_mpi_test() {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    double a = 0.0;
-    double b = 10.0;
-    int n = 900000000;
+    double a, b;
+    int n;
+
+    if (rank == 0) {
+        a = 0.0;
+        b = 10.0;
+        n = 900000000;
+    }
+
+    // Розсилка даних всім процесам
+    MPI_Bcast(&a, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&b, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
     double local_a = a + rank * (b - a) / size;
     double local_b = a + (rank + 1) * (b - a) / size;
@@ -53,6 +63,7 @@ void run_mpi_test() {
 
     MPI_Finalize();
 }
+
 
 int main() {
     run_mpi_test();
